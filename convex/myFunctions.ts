@@ -157,20 +157,22 @@ export const listRooms = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return { rooms: [] };
 
-    // Find all rooms where the user is a member
     const rooms = await ctx.db
       .query("rooms")
       .collect();
 
     return {
-      rooms: rooms.map(room => ({
-        _id: room._id,
-        name: room.name,
-        ownerId: room.ownerId,
-        isOwner: room.ownerId === identity.subject,
-        memberCount: room.members.length,
-        createdAt: room.createdAt
-      }))
+      rooms: rooms
+        .filter(room => room.members.includes(identity.subject))
+        .map(room => ({
+          _id: room._id,
+          name: room.name,
+          ownerId: room.ownerId,
+          isOwner: room.ownerId === identity.subject,
+          memberCount: room.members.length,
+          createdAt: room.createdAt,
+          members: room.members // Add members array
+        }))
     };
   }
 });
