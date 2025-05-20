@@ -1,6 +1,5 @@
 "use client";
 
-import { UserButton } from '@clerk/nextjs';
 import React, { useRef, useState, useEffect } from 'react';
 import CanvasDraw from 'react-canvas-draw';
 import { useMutation, useQuery } from "convex/react";
