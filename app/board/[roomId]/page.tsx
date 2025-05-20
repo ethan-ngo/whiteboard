@@ -45,7 +45,7 @@ export default function DrawingCanvas() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { viewer, canvasData } = useQuery(
+  const { canvasData } = useQuery(
     api.myFunctions.getCanvas,
     { roomID: roomId }
   ) ?? {};

@@ -9,7 +9,6 @@ export default defineSchema({
   canvas: defineTable({
     roomID: v.id("rooms"),
     saveData: v.string(),
-    author: v.string(),
     createdAt: v.number(),
   }).index("by_creation", ["createdAt"]),
   rooms: defineTable({

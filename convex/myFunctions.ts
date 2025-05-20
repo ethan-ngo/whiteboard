@@ -10,13 +10,6 @@ export const getCanvas = query({
     roomID: v.id("rooms"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    
-    // First verify user has access to this room
-    const room = await ctx.db.get(args.roomID);
-    if (!room || !room.members.includes(identity?.subject ?? "")) {
-      throw new Error("Not authorized to access this room");
-    }
 
     // Query canvas documents where roomID matches and get most recent
     const canvas = await ctx.db
@@ -26,7 +19,6 @@ export const getCanvas = query({
       .first();                    // Get the most recent one
 
     return {
-      viewer: identity?.subject ?? "Anonymous",
       canvasData: canvas?.saveData
     };
   },
@@ -38,11 +30,9 @@ export const updateCanvas = mutation({
     saveData: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
     await ctx.db.insert("canvas", {
       roomID: args.roomID,
       saveData: args.saveData,
-      author: identity?.subject ?? "Anonymous",
       createdAt: Date.now(),
     });
   },
