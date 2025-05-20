@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { SignUpButton } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function Home() {
   return (
@@ -45,17 +47,45 @@ function SignInForm() {
 }
 
 function RoomsList() {
+  const { user } = useUser();  // Add this hook
   const { rooms } = useQuery(api.myFunctions.listRooms) ?? { rooms: [] };
   const createRoom = useMutation(api.myFunctions.createRoom);
+  const inviteRoom = useMutation(api.myFunctions.inviteToRoom);
+  const deleteRoom = useMutation(api.myFunctions.deleteRoom);
   const [newRoomName, setNewRoomName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const router = useRouter();
-
+  
   const handleCreateRoom = async () => {
-    if (!newRoomName.trim()) return;
+    if (!newRoomName.trim() || !user) return;
     const id = await createRoom({ name: newRoomName });
     setNewRoomName("");
-    router.push('/board/' + id)
+    router.push('/board/' + id);
+  };
+
+  const handleJoinRoom = async () => {
+    if (!roomCode.trim() || !user) return;
+    const hasRoom = await inviteRoom({ 
+      roomID: roomCode as Id<"rooms">, 
+      userId: user.id 
+    });
+    if(hasRoom) {
+      router.push("/board/" + roomCode);
+      setRoomCode("");
+    }
+    else{
+      alert("Room doesn't exist or already in room")
+      setRoomCode("");
+    }
+  };
+
+  const handleDeleteRoom = async (e: React.MouseEvent, roomId: Id<"rooms">) => {
+    e.preventDefault(); // Prevent navigation
+    e.stopPropagation(); // Prevent event bubbling
+    
+    if (confirm('Are you sure you want to delete this room?')) {
+      await deleteRoom({ roomID: roomId });
+    }
   };
 
   return (
@@ -94,7 +124,7 @@ function RoomsList() {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <button
-                onClick={() => {/* TODO: Implement join room */}}
+                onClick={handleJoinRoom}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Join Room
@@ -109,16 +139,40 @@ function RoomsList() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {rooms.map(room => (
-                  <Link 
-                    key={room._id} 
-                    href={`/board/${room._id}`}
-                    className="block p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
-                  >
-                    <h3 className="font-medium text-gray-900">{room.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {room.memberCount} member{room.memberCount !== 1 ? 's' : ''}
-                    </p>
-                  </Link>
+                  <div key={room._id} className="relative group">
+                    <Link 
+                      href={`/board/${room._id}`}
+                      className="block p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-gray-900">{room.name}</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {room.memberCount} member{room.memberCount !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        {room.isOwner && (
+                          <button
+                            onClick={(e) => handleDeleteRoom(e, room._id)}
+                            className="p-1 hover:bg-red-50 rounded-full"
+                            title="Delete room"
+                          >
+                            <svg 
+                              className="w-5 h-5 text-red-500" 
+                              fill="none" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              strokeWidth="2" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}

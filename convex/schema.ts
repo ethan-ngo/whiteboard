@@ -6,21 +6,6 @@ import { v } from "convex/values";
 // app will continue to work.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-  numbers: defineTable({
-    value: v.number(),
-  }),
-  strokes: defineTable({
-    points: v.array(
-      v.object({
-        x: v.number(),
-        y: v.number(),
-      })
-    ),
-    color: v.string(),
-    size: v.number(),
-    author: v.optional(v.string()),
-    createdAt: v.number(),
-  }),
   canvas: defineTable({
     roomID: v.id("rooms"),
     saveData: v.string(),
