@@ -57,16 +57,6 @@ export default function DrawingCanvas() {
     canvasRef.current.loadSaveData(canvasData, true);
   }, [canvasData]);
 
-  // Add mouse up listener
-  useEffect(() => {
-    const handleMouseUp = () => {
-      handleDrawingChange();
-    };
-
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => window.removeEventListener('mouseup', handleMouseUp);
-  }, []); // Empty dependency array since handleDrawingChange uses refs
-
   const handleDrawingChange = () => {
     if (!canvasRef.current) return;
     const saveData = canvasRef.current.getSaveData();
@@ -81,6 +71,16 @@ export default function DrawingCanvas() {
       void updateCanvas({ roomID: roomId, saveData });
     }
   };
+
+  // Add mouse up listener
+  useEffect(() => {
+    const handleMouseUp = () => {
+      handleDrawingChange();
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, [handleDrawingChange]); // Empty dependency array since handleDrawingChange uses refs
 
   if (!mounted) return null;
 
