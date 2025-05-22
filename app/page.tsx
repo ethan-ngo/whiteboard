@@ -13,9 +13,18 @@ import { Id } from "@/convex/_generated/dataModel";
 export default function Home() {
   return (
     <>
-      <header className="sticky top-0 z-10 bg-background p-4 border-b-2 border-slate-200 dark:border-slate-800 flex flex-row justify-between items-center">
-        Whiteboard
-        <UserButton />
+      <header className="sticky top-0 z-10 bg-white px-6 py-4 border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold text-slate-800">
+              ✏️ Drawboard
+            </h1>
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+              Beta
+            </span>
+          </div>
+          <UserButton/>
+        </div>
       </header>
       <main className="flex flex-col gap-8">
         <Authenticated>
@@ -31,17 +40,39 @@ export default function Home() {
 
 function SignInForm() {
   return (
-    <div className="flex flex-col gap-8 w-96 mx-auto">
-      <SignInButton mode="modal">
-        <button className="bg-foreground text-background px-4 py-2 rounded-md">
-          Log in
-        </button>
-      </SignInButton>
-      <SignUpButton mode="modal">
-        <button className="bg-foreground text-background px-4 py-2 rounded-md">
-          Sign up
-        </button>
-      </SignUpButton>
+    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">
+            Drawboard
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Collaborate on drawings in real-time
+          </p>
+        </div>
+        <div className="space-y-4">
+          <SignInButton mode="modal">
+            <button className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              Log in to your account
+            </button>
+          </SignInButton>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">
+                or
+              </span>
+            </div>
+          </div>
+          <SignUpButton mode="modal">
+            <button className="w-full flex justify-center py-3 px-4 border-2 border-slate-200 rounded-md text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+              Create a new account
+            </button>
+          </SignUpButton>
+        </div>
+      </div>
     </div>
   );
 }
@@ -91,9 +122,7 @@ function RoomsList() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Whiteboard Rooms</h1>
-          
+        <div className="max-w-3xl mx-auto">          
           <div className="bg-white shadow rounded-lg p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Create New Room</h2>
             <div className="flex gap-4">

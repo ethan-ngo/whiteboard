@@ -18,57 +18,38 @@ export default function DrawingCanvas() {
   const [color, setColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(5);
   const lastSaveRef = useRef<string>(''); 
-  const [mounted, setMounted] = useState(false);
-  const [canvasSize, setCanvasSize] = useState({
-    width: 0,
-    height: 0
-  });
   const [showRoomId, setShowRoomId] = useState(false);
 
-  // Initialize canvas size after mount
-  useEffect(() => {
-    setMounted(true);
-    setCanvasSize({
-      width: window.innerWidth,
-      height: window.innerHeight- 76
-    });
-
-    const handleResize = () => {
-      setCanvasSize({
-        width: window.innerWidth,
-        height: window.innerHeight - 76
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const { canvasData } = useQuery(
-    api.myFunctions.getCanvas,
-    { roomID: roomId }
-  ) ?? {};
+  const { canvasData } = useQuery(api.myFunctions.getCanvas, { 
+    roomID: roomId 
+  }) ?? { canvasData: null };
+  
   const updateCanvas = useMutation(api.myFunctions.updateCanvas);
 
   // Load canvas data when available
   useEffect(() => {
     if (!canvasRef.current || !canvasData) return;
-    lastSaveRef.current = canvasData;
-    canvasRef.current.loadSaveData(canvasData, true);
+    try {
+      // Only update if data has changed
+      if (canvasData !== lastSaveRef.current) {
+        lastSaveRef.current = canvasData;
+        canvasRef.current.loadSaveData(canvasData, true);
+      }
+    } catch (error) {
+      console.error('Error loading canvas data:', error);
+    }
   }, [canvasData]);
 
   const handleDrawingChange = () => {
     if (!canvasRef.current) return;
-    const saveData = canvasRef.current.getSaveData();
-    const parsedNewData = JSON.parse(saveData);
-    const parsedLastData = lastSaveRef.current ? JSON.parse(lastSaveRef.current) : null;
-    
-    const hasChanged = !parsedLastData || 
-      JSON.stringify(parsedNewData.lines) !== JSON.stringify(parsedLastData.lines);
-
-    if (hasChanged) {
-      lastSaveRef.current = saveData;
-      void updateCanvas({ roomID: roomId, saveData });
+    try {
+      const saveData = canvasRef.current.getSaveData();
+      if (saveData !== lastSaveRef.current) {
+        lastSaveRef.current = saveData;
+        void updateCanvas({ roomID: roomId, saveData });
+      }
+    } catch (error) {
+      console.error('Error saving canvas data:', error);
     }
   };
 
@@ -81,8 +62,6 @@ export default function DrawingCanvas() {
     window.addEventListener('mouseup', handleMouseUp);
     return () => window.removeEventListener('mouseup', handleMouseUp);
   }, [handleDrawingChange]); // Empty dependency array since handleDrawingChange uses refs
-
-  if (!mounted) return null;
 
   return (
     <>
@@ -173,19 +152,19 @@ export default function DrawingCanvas() {
           </div>
         </div>
       </header>
-      <main className="w-full h-[calc(100vh-200px)]">
-        {canvasSize.width > 0 && canvasSize.height > 0 && (
-          <CanvasDraw
-            ref={canvasRef}
-            brushColor={mode === 'erase' ? '#ffffff' : color}
-            brushRadius={brushSize}
-            lazyRadius={0}
-            canvasWidth={canvasSize.width}
-            canvasHeight={canvasSize.height}
-            hideGrid={true}
-            className="border border-slate-200"
-          />
-        )}
+      <main className="w-full h-[calc(100vh-76px)] flex items-center justify-center bg-gray-50">
+        <CanvasDraw
+          ref={canvasRef}
+          brushColor={mode === 'erase' ? '#ffffff' : color}
+          brushRadius={brushSize}
+          lazyRadius={0}
+          canvasWidth={1200}
+          canvasHeight={600}
+          hideGrid={true}
+          className="border-4 border-gray-300 rounded-lg shadow-lg bg-white"
+          immediateLoading={true}
+          saveData={canvasData || undefined}
+        />
       </main>
     </>
   );
